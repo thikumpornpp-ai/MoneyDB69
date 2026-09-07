@@ -1,0 +1,6 @@
+{
+  "name": "MoneyDB69 บันทึกรายรับรายจ่าย",
+  "description": "เว็บแอปพลิเคชันจัดการรายรับรายจ่าย พร้อมระบบสรุปผลรายเดือน กราฟวิเคราะห์ข้อมูล บันทึกสู่ Firebase MoneyDB69 และเข้าสู่ระบบด้วย Gmail",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
