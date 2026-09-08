@@ -8,7 +8,10 @@ import {
   updateTransaction, 
   deleteTransaction, 
   subscribeUserTransactions,
-  DATABASE_NAME
+  DATABASE_NAME,
+  AppUser,
+  getSavedDirectUser,
+  clearDirectUserSession
 } from './firebase';
 import { 
   Transaction, 
@@ -21,6 +24,7 @@ import { AnalyticsCharts } from './components/AnalyticsCharts';
 import { TransactionList } from './components/TransactionList';
 import { TransactionModal } from './components/TransactionModal';
 import { AuthBanner } from './components/AuthBanner';
+import { DomainFixModal } from './components/DomainFixModal';
 import { 
   Plus, 
   Database, 
@@ -31,10 +35,11 @@ import {
 } from 'lucide-react';
 
 export default function App() {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | AppUser | null>(null);
   const [loadingAuth, setLoadingAuth] = useState<boolean>(true);
   const [isDemoUser, setIsDemoUser] = useState<boolean>(false);
   const [demoUserEmail, setDemoUserEmail] = useState<string>('demo.user@gmail.com');
+  const [showDomainFixModal, setShowDomainFixModal] = useState<boolean>(false);
 
   // Transactions state
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -64,12 +69,34 @@ export default function App() {
 
   // 1. Listen for Auth Changes
   useEffect(() => {
+    // Check if there is an active direct email session first
+    const directUser = getSavedDirectUser();
+    if (directUser) {
+      setUser(directUser);
+      setIsDemoUser(false);
+      setLoadingAuth(false);
+    }
+
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser) {
-        setUser(firebaseUser);
+        const savedDirect = getSavedDirectUser();
+        if (firebaseUser.isAnonymous && savedDirect) {
+          setUser({
+            uid: firebaseUser.uid,
+            email: savedDirect.email,
+            displayName: savedDirect.displayName || firebaseUser.displayName || savedDirect.email.split('@')[0],
+            photoURL: firebaseUser.photoURL,
+            isAnonymous: true,
+          });
+        } else {
+          setUser(firebaseUser);
+        }
         setIsDemoUser(false);
       } else if (!isDemoUser) {
-        setUser(null);
+        const savedDirect = getSavedDirectUser();
+        if (!savedDirect) {
+          setUser(null);
+        }
       }
       setLoadingAuth(false);
     });
@@ -140,8 +167,9 @@ export default function App() {
       }
     } catch (err: any) {
       console.error('Sign in failed:', err);
-      // If popup was blocked by iframe environment
-      if (err.code === 'auth/popup-blocked' || err.code === 'auth/cancelled-popup-request') {
+      if (err.code === 'auth/unauthorized-domain' || (err.message && err.message.includes('unauthorized-domain'))) {
+        setShowDomainFixModal(true);
+      } else if (err.code === 'auth/popup-blocked' || err.code === 'auth/cancelled-popup-request') {
         showToast('หน้าต่างเข้าสู่ระบบถูกปิดหรือถูกบล็อก กรุณาเปิดแอปในหน้าต่างใหม่หรือใช้บัญชีตัวอย่าง', 'info');
       } else {
         showToast('เข้าสู่ระบบไม่สำเร็จ: ' + (err.message || 'โปรดลองใหม่อีกครั้ง'), 'error');
@@ -149,6 +177,13 @@ export default function App() {
     } finally {
       setLoadingAuth(false);
     }
+  };
+
+  // Handle Direct Login Success
+  const handleDirectLoginSuccess = (appUser: AppUser) => {
+    setUser(appUser);
+    setIsDemoUser(false);
+    showToast(`เข้าสู่ระบบสำเร็จ: ${appUser.displayName || appUser.email} (เชื่อมต่อ Firebase ${DATABASE_NAME})`, 'success');
   };
 
   // Handle Demo Mode
@@ -160,6 +195,7 @@ export default function App() {
 
   // Handle Sign Out
   const handleSignOut = async () => {
+    clearDirectUserSession();
     if (isDemoUser) {
       setIsDemoUser(false);
       setUser(null);
@@ -364,6 +400,7 @@ export default function App() {
           <AuthBanner
             onSignIn={handleGoogleSignIn}
             onDemoSignIn={handleDemoMode}
+            onOpenDomainHelp={() => setShowDomainFixModal(true)}
             loading={loadingAuth}
           />
         )}
@@ -436,6 +473,17 @@ export default function App() {
         onClose={() => setIsModalOpen(false)}
         onSubmit={handleFormSubmit}
         initialData={editingTransaction}
+      />
+
+      {/* Domain Fix & Direct Email Modal */}
+      <DomainFixModal
+        isOpen={showDomainFixModal}
+        onClose={() => setShowDomainFixModal(false)}
+        onDirectLoginSuccess={handleDirectLoginSuccess}
+        onRetryGoogleAuth={handleGoogleSignIn}
+        onSelectDemo={handleDemoMode}
+        currentDomain={typeof window !== 'undefined' ? window.location.hostname : 'money-db-69.vercel.app'}
+        projectId="moneydb69"
       />
 
       {/* Footer */}

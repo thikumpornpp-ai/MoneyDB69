@@ -9,10 +9,10 @@ import {
   Sparkles,
   Wallet
 } from 'lucide-react';
-import { DATABASE_NAME } from '../firebase';
+import { DATABASE_NAME, AppUser } from '../firebase';
 
 interface NavbarProps {
-  user: User | null;
+  user: User | AppUser | null;
   loadingAuth: boolean;
   onSignIn: () => void;
   onSignOut: () => void;

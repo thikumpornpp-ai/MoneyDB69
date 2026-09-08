@@ -1,16 +1,18 @@
 import React from 'react';
-import { ShieldCheck, Database, Sparkles, ArrowRight } from 'lucide-react';
+import { ShieldCheck, Database, Sparkles, Mail, Globe } from 'lucide-react';
 import { DATABASE_NAME } from '../firebase';
 
 interface AuthBannerProps {
   onSignIn: () => void;
   onDemoSignIn: () => void;
+  onOpenDomainHelp?: () => void;
   loading: boolean;
 }
 
 export const AuthBanner: React.FC<AuthBannerProps> = ({
   onSignIn,
   onDemoSignIn,
+  onOpenDomainHelp,
   loading,
 }) => {
   return (
@@ -72,13 +74,25 @@ export const AuthBanner: React.FC<AuthBannerProps> = ({
             <span>เข้าสู่ระบบด้วย Gmail</span>
           </button>
 
+          {onOpenDomainHelp && (
+            <button
+              id="btn-direct-email-help"
+              onClick={onOpenDomainHelp}
+              className="flex items-center gap-2 px-4 py-3 bg-emerald-700/80 hover:bg-emerald-700 text-white rounded-xl text-sm font-semibold border border-emerald-500/50 transition-colors shadow-md cursor-pointer"
+              title="เข้าใช้งานด้วยอีเมลโดยตรง หรือตั้งค่า Authorized domain บน Vercel"
+            >
+              <Mail className="w-4 h-4 text-emerald-200" />
+              <span>เข้าสู่ระบบด้วยอีเมล / แก้ไขโดเมน</span>
+            </button>
+          )}
+
           <button
             id="btn-demo-mode"
             onClick={onDemoSignIn}
-            className="flex items-center gap-2 px-4 py-3 bg-emerald-800/60 hover:bg-emerald-800 text-emerald-100 rounded-xl text-sm font-semibold border border-emerald-600/40 transition-colors cursor-pointer"
+            className="flex items-center gap-2 px-4 py-3 bg-emerald-950/60 hover:bg-emerald-900 text-emerald-200 rounded-xl text-sm font-semibold border border-emerald-700/40 transition-colors cursor-pointer"
           >
             <Sparkles className="w-4 h-4 text-emerald-300" />
-            <span>ทดลองใช้งานด้วยบัญชีตัวอย่าง</span>
+            <span>ทดลองใช้งาน (Demo)</span>
           </button>
         </div>
 
