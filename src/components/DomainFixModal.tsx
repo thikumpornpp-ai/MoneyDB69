@@ -180,6 +180,24 @@ export const DomainFixModal: React.FC<DomainFixModalProps> = ({
                           </button>
                         </div>
 
+                        {currentDomain !== 'money-db-69.vercel.app' && (
+                          <div className="flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-lg border border-slate-300 font-mono text-xs">
+                            <span>money-db-69.vercel.app</span>
+                            <button
+                              type="button"
+                              onClick={() => handleCopy('money-db-69.vercel.app')}
+                              className="p-1 hover:bg-slate-100 rounded text-slate-500 hover:text-slate-800 transition-colors"
+                              title="คัดลอก"
+                            >
+                              {copiedDomain === 'money-db-69.vercel.app' ? (
+                                <Check className="w-3.5 h-3.5 text-emerald-600" />
+                              ) : (
+                                <Copy className="w-3.5 h-3.5" />
+                              )}
+                            </button>
+                          </div>
+                        )}
+
                         <div className="flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-lg border border-slate-300 font-mono text-xs">
                           <span>vercel.app</span>
                           <button

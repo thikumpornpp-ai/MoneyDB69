@@ -168,6 +168,7 @@ export default function App() {
     } catch (err: any) {
       console.error('Sign in failed:', err);
       if (err.code === 'auth/unauthorized-domain' || (err.message && err.message.includes('unauthorized-domain'))) {
+        showToast('โดเมนยังไม่ได้รับอนุญาตใน Firebase (auth/unauthorized-domain) กำลังเปิดหน้าต่างช่วยเหลือ...', 'error');
         setShowDomainFixModal(true);
       } else if (err.code === 'auth/popup-blocked' || err.code === 'auth/cancelled-popup-request') {
         showToast('หน้าต่างเข้าสู่ระบบถูกปิดหรือถูกบล็อก กรุณาเปิดแอปในหน้าต่างใหม่หรือใช้บัญชีตัวอย่าง', 'info');
